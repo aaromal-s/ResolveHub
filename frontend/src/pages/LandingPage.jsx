@@ -7,11 +7,32 @@ import { FiCheckCircle, FiClock, FiUsers, FiTrendingUp, FiShield, FiArrowRight, 
 const LandingPage = () => {
   const [feedbacks, setFeedbacks] = useState([]);
 
+  const defaultFeedbacks = [
+    {
+      _id: 'default-1',
+      comment: 'The turnaround time for fixing our street lights was astounding. Submitted on Monday, fixed by Tuesday night with constant tracking updates!',
+      rating: 5,
+      user: { name: 'Priya Nair', role: 'user', image: '12' }
+    },
+    {
+      _id: 'default-2',
+      comment: 'No more waiting at municipal offices with physical paperwork. ResolveHub let me take a picture of the water leak and assigned an officer in hours.',
+      rating: 5,
+      user: { name: 'Arjun Menon', role: 'user', image: '15' }
+    },
+    {
+      _id: 'default-3',
+      comment: 'As a department officer, this platform brings immense clarity to our daily queue. The SLA tracking helps us prioritize urgent civic repairs.',
+      rating: 5,
+      user: { name: 'Officer Sarah', role: 'admin', image: '32' }
+    }
+  ];
+
   useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
         const data = await api.get('/platform-feedback');
-        if (data.success) {
+        if (data.success && data.feedbacks && data.feedbacks.length > 0) {
           setFeedbacks(data.feedbacks);
         }
       } catch (err) {
@@ -20,6 +41,8 @@ const LandingPage = () => {
     };
     fetchFeedbacks();
   }, []);
+
+  const displayFeedbacks = feedbacks.length > 0 ? feedbacks : defaultFeedbacks;
 
   const stats = [
     { label: 'Grievances Resolved', count: '14,820+', icon: <FiCheckCircle className="text-emerald-500" />, bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
@@ -302,7 +325,7 @@ const LandingPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {feedbacks.slice(0, 3).map((fb) => (
+            {displayFeedbacks.slice(0, 3).map((fb) => (
               <div key={fb._id} className="bg-slate-800/80 backdrop-blur-sm p-8 rounded-3xl border border-slate-700 flex flex-col gap-6 relative group hover:bg-slate-800 transition-colors">
                 <div className="absolute -top-4 -left-4 text-6xl text-slate-700/50 font-serif font-black">"</div>
                 <p className="text-slate-300 text-sm leading-relaxed relative z-10 font-medium line-clamp-4">

@@ -22,7 +22,7 @@ router.get('/:id', protect, getComplaintById);
 
 // Admin / Authority specific routes
 router.put('/:id/assign', protect, admin, assignComplaint);
-router.put('/:id/claim', protect, claimComplaint);
+router.put('/:id/claim', protect, officer, claimComplaint);
 router.put('/:id/status', protect, updateComplaintStatus);
 
 module.exports = router;

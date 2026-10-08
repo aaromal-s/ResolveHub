@@ -4,8 +4,9 @@ const Department = require('./src/models/Department');
 
 const seed = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('MongoDB Connected for Seeding');
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/complaint_management';
+    await mongoose.connect(mongoUri);
+    console.log(`MongoDB Connected for Seeding: ${mongoUri}`);
 
     const depts = [
       { name: 'Water & Sanitation', description: 'Water leaks, supply issues, sanitation.', headOfDept: 'John Doe' },

@@ -206,8 +206,9 @@ const getComplaintById = async (req, res, next) => {
         throw new Error('Not authorized to access this complaint details');
       } else if (req.user.role === 'officer') {
         const isAssignedToOfficer = complaint.assignedTo && complaint.assignedTo._id && complaint.assignedTo._id.toString() === req.user._id.toString();
-        const isInOfficerDept = (complaint.category && complaint.category._id && complaint.category._id.toString() === req.user.department?.toString()) || 
-                               (complaint.category && complaint.category.toString() === req.user.department?.toString());
+        const officerDeptId = req.user.department ? req.user.department.toString() : null;
+        const isInOfficerDept = (complaint.category && (complaint.category._id ? complaint.category._id.toString() : complaint.category.toString()) === officerDeptId) ||
+                                (complaint.assignedDepartment && (complaint.assignedDepartment._id ? complaint.assignedDepartment._id.toString() : complaint.assignedDepartment.toString()) === officerDeptId);
         
         if (!isAssignedToOfficer && !isInOfficerDept) {
           res.statusCode = 403;
@@ -330,12 +331,23 @@ const updateComplaintStatus = async (req, res, next) => {
       throw new Error('Complaint not found');
     }
 
-    // Auth validation: must be admin, or the assigned officer, or the citizen closing their own ticket
+    // Auth validation: must be admin, or the assigned officer / department officer, or the citizen closing their own ticket
     const isCitizenClosing = req.user.role === 'user' && complaint.userId.toString() === req.user._id.toString() && status === 'Closed';
+    const officerDeptId = req.user.department ? req.user.department.toString() : null;
+    const isOfficerInDept = req.user.role === 'officer' && (
+      (complaint.assignedTo && complaint.assignedTo.toString() === req.user._id.toString()) ||
+      (complaint.category && complaint.category.toString() === officerDeptId) ||
+      (complaint.assignedDepartment && complaint.assignedDepartment.toString() === officerDeptId)
+    );
     
-    if (req.user.role !== 'admin' && (!complaint.assignedTo || complaint.assignedTo.toString() !== req.user._id.toString()) && !isCitizenClosing) {
+    if (req.user.role !== 'admin' && !isOfficerInDept && !isCitizenClosing) {
       res.statusCode = 403;
       throw new Error('Not authorized to update status of this complaint');
+    }
+
+    // Auto-assign to officer if currently unassigned
+    if (req.user.role === 'officer' && !complaint.assignedTo) {
+      complaint.assignedTo = req.user._id;
     }
 
     complaint.status = status;
@@ -355,8 +367,8 @@ const updateComplaintStatus = async (req, res, next) => {
       updatedBy: req.user._id,
     });
 
-    // Notify citizen � include officer name and remarks in message
-    const updaterUser = await require('../models/User').findById(req.user._id).select('name');
+    // Notify citizen with updater name and remarks
+    const updaterUser = await User.findById(req.user._id).select('name');
     const updaterName = updaterUser ? updaterUser.name : 'System';
     let citizenMsg = `${updaterName} updated your complaint ${complaint.complaintId} to "${status}".`;
     if (remarks && remarks.trim()) {
@@ -378,7 +390,6 @@ const updateComplaintStatus = async (req, res, next) => {
   }
 };
 
-
 // @desc    Claim a complaint (Officer)
 // @route   PUT /api/complaints/:id/claim
 // @access  Private (Officer)
@@ -397,11 +408,31 @@ const claimComplaint = async (req, res, next) => {
     }
 
     complaint.assignedTo = req.user._id;
-    if (complaint.status === 'pending' || complaint.status === 'submitted') {
-       complaint.status = 'in-progress';
+    if (req.user.department && !complaint.assignedDepartment) {
+      complaint.assignedDepartment = req.user.department;
+    }
+
+    // Advance status to 'In Progress' if currently 'Submitted' or 'Assigned'
+    if (complaint.status === 'Submitted' || complaint.status === 'Assigned') {
+      complaint.status = 'In Progress';
     }
     
     await complaint.save();
+
+    // Create status history log
+    await StatusHistory.create({
+      complaintId: complaint._id,
+      status: complaint.status,
+      remarks: `Claimed by officer ${req.user.name || 'Department Officer'}`,
+      updatedBy: req.user._id,
+    });
+
+    // Notify citizen
+    await Notification.create({
+      userId: complaint.userId,
+      message: `Officer ${req.user.name || 'Department Officer'} has claimed and started working on your complaint ${complaint.complaintId}.`,
+      type: 'status_change',
+    });
 
     res.json({
       success: true,
@@ -412,7 +443,6 @@ const claimComplaint = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // @desc    Get all complaints for officer's department
 // @route   GET /api/complaints/department
@@ -426,21 +456,39 @@ const getDepartmentComplaints = async (req, res, next) => {
     }
 
     const { status, priority, search } = req.query;
-    let query = { category: departmentId };
+    let query = {
+      $or: [
+        { category: departmentId },
+        { assignedDepartment: departmentId }
+      ]
+    };
 
     if (status) query.status = status;
     if (priority) query.priority = priority;
     
     if (search) {
-      query.$or = [
-        { complaintId: { $regex: search, $options: 'i' } },
-        { title: { $regex: search, $options: 'i' } }
+      query.$and = [
+        {
+          $or: [
+            { category: departmentId },
+            { assignedDepartment: departmentId }
+          ]
+        },
+        {
+          $or: [
+            { complaintId: { $regex: search, $options: 'i' } },
+            { title: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } }
+          ]
+        }
       ];
+      delete query.$or;
     }
 
     const complaints = await Complaint.find(query)
       .populate('userId', 'name email phone')
       .populate('category', 'name')
+      .populate('assignedDepartment', 'name')
       .populate('assignedTo', 'name')
       .sort({ createdAt: -1 });
 

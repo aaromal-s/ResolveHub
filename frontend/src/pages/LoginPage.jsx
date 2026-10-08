@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 import { FiEye, FiEyeOff, FiMail, FiLock, FiShield, FiUser, FiCheckCircle } from 'react-icons/fi';
 
 const LoginPage = () => {
@@ -46,12 +47,7 @@ const LoginPage = () => {
     if (!forgotEmail) return;
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/forgotpassword', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail }),
-      });
-      const data = await response.json();
+      const data = await api.post('/auth/forgotpassword', { email: forgotEmail });
       if (data.success) {
         setForgotSentMessage('Simulated email reset link has been dispatched! Check your backend server console.');
         showToast('Reset email simulated!', 'success');

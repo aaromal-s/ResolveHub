@@ -57,13 +57,13 @@ const NewComplaint = () => {
             setLocation(`${latitude}, ${longitude}`);
             showToast('Using raw coordinates', 'info');
           }
-        } catch (err) {
+        } catch {
           showToast('Failed to fetch address details', 'error');
         } finally {
           setIsFetchingLocation(false);
         }
       },
-      (error) => {
+      (_error) => {
         showToast('Failed to get location. Please allow location access.', 'error');
         setIsFetchingLocation(false);
       }

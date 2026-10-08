@@ -7,6 +7,7 @@ const Complaint = require('./models/Complaint');
 const StatusHistory = require('./models/StatusHistory');
 const Feedback = require('./models/Feedback');
 const Notification = require('./models/Notification');
+const PlatformFeedback = require('./models/PlatformFeedback');
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ const seedDB = async () => {
     await StatusHistory.deleteMany({});
     await Feedback.deleteMany({});
     await Notification.deleteMany({});
+    await PlatformFeedback.deleteMany({});
 
     console.log('Seeding departments...');
     const createdDepts = await Department.insertMany(departmentsData);
@@ -242,6 +244,25 @@ const seedDB = async () => {
       message: 'Your complaint CMP-20260707-1004 regarding mosquitoes has been RESOLVED.',
       type: 'status_change',
     });
+
+    // Seed platform feedbacks
+    await PlatformFeedback.create([
+      {
+        user: user1._id,
+        rating: 5,
+        comment: 'The turnaround time for fixing our street lights was astounding. Submitted on Monday, fixed by Tuesday night with constant tracking updates!',
+      },
+      {
+        user: user2._id,
+        rating: 5,
+        comment: 'No more waiting at municipal offices with physical paperwork. ResolveHub let me take a picture of the water leak and assigned an officer in hours.',
+      },
+      {
+        user: officer2._id,
+        rating: 5,
+        comment: 'As a department officer, this platform brings immense clarity to our daily queue. The SLA tracking helps us prioritize urgent civic repairs.',
+      },
+    ]);
 
     console.log('Seeded sample complaints and status timeline.');
     console.log('Database Seeding Completed Successfully!');

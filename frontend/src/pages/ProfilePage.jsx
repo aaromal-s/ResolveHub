@@ -4,7 +4,7 @@ import { ASSET_URL } from '../services/api';
 import { FiEye, FiEyeOff, FiEdit2, FiCamera } from 'react-icons/fi';
 
 const ProfilePage = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, showToast } = useAuth();
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -45,7 +45,7 @@ const ProfilePage = () => {
     e.preventDefault();
 
     if (password && password !== confirmPassword) {
-      alert('Passwords do not match');
+      showToast('Passwords do not match', 'error');
       return;
     }
 

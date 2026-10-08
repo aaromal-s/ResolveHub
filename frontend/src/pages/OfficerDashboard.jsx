@@ -15,19 +15,6 @@ const OfficerDashboard = () => {
   const [activeTab, setActiveTab] = useState('unassigned');
   const [updating, setUpdating] = useState(null);
 
-  
-  const handleClaim = async (id) => {
-    try {
-      const data = await api.put(`/complaints/${id}/claim`);
-      if (data.success) {
-        showToast('Complaint claimed successfully!', 'success');
-        fetchOfficerStats();
-      }
-    } catch (err) {
-      showToast(err.message, 'error');
-    }
-  };
-
   const fetchOfficerStats = useCallback(async () => {
     try {
       const data = await api.get('/reports/officer-dashboard');
@@ -48,6 +35,18 @@ const OfficerDashboard = () => {
   useEffect(() => {
     fetchOfficerStats();
   }, [fetchOfficerStats]);
+
+  const handleClaim = async (id) => {
+    try {
+      const data = await api.put(`/complaints/${id}/claim`);
+      if (data.success) {
+        showToast('Complaint claimed successfully!', 'success');
+        fetchOfficerStats();
+      }
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
 
   const handleQuickResolve = async (id) => {
     try {

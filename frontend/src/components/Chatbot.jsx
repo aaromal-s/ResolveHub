@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMessageSquare, FiX, FiSend, FiMinimize2 } from 'react-icons/fi';
+import { FiMessageSquare, FiSend, FiMinimize2 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 
@@ -86,7 +86,7 @@ const Chatbot = () => {
       if (response.success) {
         setMessages(prev => [...prev, { role: 'assistant', content: response.reply }]);
       }
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I am currently unavailable. Please try again later.' }]);
     } finally {
       setIsLoading(false);

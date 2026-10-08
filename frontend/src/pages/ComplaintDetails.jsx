@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { api, ASSET_URL } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { FiCalendar, FiMapPin, FiUser, FiPaperclip, FiArrowLeft, FiClock, FiStar, FiFileText, FiAlertTriangle } from 'react-icons/fi';
 
@@ -215,7 +215,7 @@ const ComplaintDetails = () => {
                   {complaint.attachments.map((filePath, i) => (
                     <a
                       key={i}
-                      href={`http://localhost:5000${filePath}`}
+                      href={filePath.startsWith('http') ? filePath : `${ASSET_URL}${filePath}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-sm font-bold text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 px-4 py-2 border border-brand-100 dark:border-brand-900/50 bg-brand-50/50 dark:bg-brand-900/20 hover:bg-brand-100 dark:hover:bg-brand-900/40 rounded-xl transition-colors"

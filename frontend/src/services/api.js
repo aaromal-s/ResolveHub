@@ -34,7 +34,14 @@ class ApiService {
 
     try {
       const response = await fetch(url, options);
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        data = { message: text || response.statusText };
+      }
       
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');

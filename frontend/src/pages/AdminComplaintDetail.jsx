@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { api, ASSET_URL } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
   FiMapPin, FiUser, FiPaperclip, FiArrowLeft,
@@ -10,7 +10,7 @@ import {
 const AdminComplaintDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { showToast, isAdmin, isOfficer } = useAuth();
+  const { showToast, isAdmin } = useAuth();
 
   const [complaint, setComplaint] = useState(null);
   const [timeline, setTimeline] = useState([]);
@@ -61,7 +61,7 @@ const AdminComplaintDetail = () => {
     } finally {
       setLoading(false);
     }
-  }, [id, navigate, showToast]);
+  }, [id, isAdmin, navigate, showToast]);
 
   useEffect(() => {
     fetchDetails();
@@ -252,7 +252,7 @@ const AdminComplaintDetail = () => {
                   {complaint.attachments.map((filePath, i) => (
                     <a
                       key={i}
-                      href={`http://localhost:5000${filePath}`}
+                      href={filePath.startsWith('http') ? filePath : `${ASSET_URL}${filePath}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-sm font-bold text-brand-600 hover:text-brand-800 px-4 py-2 border border-brand-100 bg-brand-50/50 hover:bg-brand-100 rounded-xl transition-colors shadow-sm"

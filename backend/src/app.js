@@ -25,6 +25,7 @@ app.use('/api/complaints', require('./routes/complaintRoutes'));
 app.use('/api/departments', require('./routes/departmentRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/feedback', require('./routes/feedbackRoutes'));
+app.use('/api/platform-feedback', require('./routes/platformFeedbackRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));

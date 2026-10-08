@@ -59,7 +59,7 @@ const AdminComplaints = () => {
       }
     };
     fetchDependencies();
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     fetchComplaints();

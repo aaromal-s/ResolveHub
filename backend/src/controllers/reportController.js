@@ -244,26 +244,34 @@ const getOfficerDashboardStats = async (req, res) => {
 
     const department = await Department.findById(departmentId);
 
+    const deptFilter = { $or: [{ category: departmentId }, { assignedDepartment: departmentId }] };
+
     // Count stats using correct status capitalization
-    const total = await Complaint.countDocuments({ category: departmentId });
+    const total = await Complaint.countDocuments(deptFilter);
     const pending = await Complaint.countDocuments({
-      category: departmentId,
+      ...deptFilter,
       status: { $in: ['Submitted', 'Assigned', 'In Progress'] }
     });
-    const resolved = await Complaint.countDocuments({ category: departmentId, status: 'Resolved' });
-    const closed = await Complaint.countDocuments({ category: departmentId, status: 'Closed' });
+    const resolved = await Complaint.countDocuments({ ...deptFilter, status: 'Resolved' });
+    const closed = await Complaint.countDocuments({ ...deptFilter, status: 'Closed' });
 
     // SLA breach: active complaints past deadline
     const now = new Date();
     const slaBreach = await Complaint.countDocuments({
-      category: departmentId,
+      ...deptFilter,
       status: { $in: ['Submitted', 'Assigned', 'In Progress'] },
       slaDeadline: { $lt: now }
     });
 
     // Avg resolution time (hours)
     const avgResAgg = await Complaint.aggregate([
-      { $match: { category: departmentId, status: { $in: ['Resolved', 'Closed'] }, resolvedAt: { $exists: true } } },
+      {
+        $match: {
+          $or: [{ category: departmentId }, { assignedDepartment: departmentId }],
+          status: { $in: ['Resolved', 'Closed'] },
+          resolvedAt: { $exists: true }
+        }
+      },
       { $project: { durationHrs: { $divide: [{ $subtract: ['$resolvedAt', '$createdAt'] }, 3600000] } } },
       { $group: { _id: null, avg: { $avg: '$durationHrs' } } }
     ]);
@@ -271,13 +279,15 @@ const getOfficerDashboardStats = async (req, res) => {
 
     // Unassigned complaints in this dept (no assignedTo)
     const unassignedComplaints = await Complaint.find({
-      category: departmentId,
+      ...deptFilter,
       assignedTo: null,
-      status: 'Submitted'
+      status: { $in: ['Submitted', 'Assigned'] }
     })
       .sort({ createdAt: -1 })
       .limit(10)
-      .populate('userId', 'name email phone');
+      .populate('userId', 'name email phone')
+      .populate('category', 'name')
+      .populate('assignedDepartment', 'name');
 
     // My assigned complaints
     const myComplaints = await Complaint.find({ assignedTo: officerId })

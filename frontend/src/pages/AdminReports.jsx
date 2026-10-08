@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 import { FiDownload, FiBarChart2, FiFileText } from 'react-icons/fi';
 
 const AdminReports = () => {
@@ -9,10 +10,8 @@ const AdminReports = () => {
   const handleCsvDownload = async () => {
     setDownloading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/reports/export-csv', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
+      const response = await fetch(`${api.baseURL}/reports/export-csv`, {
+        headers: api.getHeaders(),
       });
 
       if (!response.ok) throw new Error('Failed to generate CSV export');
