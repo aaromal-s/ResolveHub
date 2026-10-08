@@ -7,10 +7,8 @@ const connectDB = async () => {
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`MongoDB Connection Error: ${error.message}`);
-    console.error('Please check if MongoDB service is running or check MONGODB_URI in your .env file.');
-    // We do not crash the app, so developers can see error messages or run in fallback modes if needed
-    process.exit(1);
+    console.warn(`MongoDB Connection Warning: ${error.message}`);
+    console.warn('Backend server running. If local MongoDB is not running, configure MONGODB_URI in backend/.env to connect to your MongoDB cluster.');
   }
 };
 
