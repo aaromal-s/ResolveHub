@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.local
+dist/
+dist-ssr/
+uploads/
+backend/uploads/
+*.log
+.DS_Store
+.vscode/
+.idea/

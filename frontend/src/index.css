@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-slate-800 font-sans antialiased;
+    font-family: 'Inter', 'Outfit', sans-serif;
+  }
+  /* Light mode: add a subtle blue-tinted mesh gradient to the page background */
+  html:not(.dark) body {
+    background-color: #eef4fb;
+    background-image:
+      radial-gradient(ellipse at 10% 15%, rgba(14,142,233,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 85%, rgba(20,184,166,0.06) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+  /* Dark mode stays exactly as it was */
+  html.dark body {
+    @apply bg-slate-950 text-slate-200;
+    background-image: none;
+  }
+  body {
+    @apply transition-colors duration-300;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { @apply bg-slate-100; }
+::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full hover:bg-slate-400; }
+
+/* Gradient text utility */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-tealbrand-500;
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+}
+
+/* Animation utilities */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes bounce-short {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.animate-bounce-short {
+  animation: bounce-short 0.6s ease-in-out;
+}
+
+/* Global Fix for Form Inputs Legibility in Dark Mode ONLY */
+.dark input,
+.dark textarea,
+.dark select {
+  color: #f8fafc !important;
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark input:disabled,
+.dark textarea:disabled,
+.dark select:disabled {
+  color: #cbd5e1 !important;
+  background-color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #94a3b8 !important;
+}
